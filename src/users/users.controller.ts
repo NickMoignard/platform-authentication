@@ -12,15 +12,22 @@ import {
   UseGuards,
   Request,
   ForbiddenException,
+  UseFilters,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'authz';
+
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { EmailAlreadyInUseError } from './users.errors';
+import {
+  EmailAlreadyInUseError,
+  UsernameAlreadyInUseError,
+} from './users.errors';
 import { UserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { HttpExceptionFilter } from 'authz';
 
+@UseFilters(HttpExceptionFilter)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -33,7 +40,7 @@ export class UsersController {
     } catch (error) {
       if (
         error instanceof EmailAlreadyInUseError ||
-        error instanceof EmailAlreadyInUseError
+        error instanceof UsernameAlreadyInUseError
       ) {
         throw new ConflictException(error.message);
       }
